@@ -3,9 +3,26 @@ layout: default
 ---
 
 
-<div class="post-grid">
+<div class="controls">
+    <div class="search-box">
+        <input type="text" id="video-search" placeholder="Filter videos by title...">
+    </div>
+    <div class="sort-box">
+        <select id="video-sort">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="most-views">Most Views</option>
+            <option value="least-views">Least Views</option>
+        </select>
+    </div>
+</div>
+
+<div class="post-grid" id="post-grid">
     {% for post in site.posts %}
-    <article class="post-card">
+    <article class="post-card" 
+             data-title="{{ post.title | downcase }}" 
+             data-date="{{ post.date | date: '%s' }}" 
+             data-views="{{ post.view_count | default: 0 }}">
         <a href="{{ post.url | relative_url }}" class="post-card-image">
             <img src="https://img.youtube.com/vi/{{ post.video_id }}/mqdefault.jpg" alt="{{ post.title }}">
             <div class="play-overlay">
@@ -13,7 +30,6 @@ layout: default
             </div>
         </a>
         <div class="post-card-content">
-            <span class="post-date">{{ post.date | date: "%b %d, %Y" }}</span>
             <h2 class="post-card-title">
                 <a href="{{ post.url | relative_url }}" class="stretched-link">{{ post.title }}</a>
             </h2>

@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ page.title | default: site.title }}</title>
-    <meta name="description" content="{{ page.description | default: site.description }}">
+    <title>Adding Power Poles to a Ham Radio</title>
+    <meta name="description" content="A blog feed of my YouTube channel playlist about Ham Radio and Solar power.">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="{{ '/index.css' | relative_url }}">
+    <link rel="stylesheet" href="/index.css">
 
     <!-- Favicon -->
     <link rel="icon"
@@ -22,7 +22,7 @@
 
     <header class="site-header">
         <div class="container header-container">
-            <a href="{{ '/' | relative_url }}" class="site-title">{{ site.title }}</a>
+            <a href="/" class="site-title">KG7AJM</a>
             <a href="https://www.qrz.com/db/KG7AJM" target="_blank" class="nav-button">
                 QRZ Profile
                 <svg class="icon-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
@@ -31,17 +31,42 @@
     </header>
 
     <main class="container">
-        {{ content }}
+        <article class="post">
+    <header class="post-header">
+        <h1 class="post-title">Adding Power Poles to a Ham Radio</h1>
+    </header>
+
+    <div class="video-container">
+        <iframe 
+            src="https://www.youtube.com/embed/gWj-Rk2osoU" 
+            title="YouTube video player" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allowfullscreen>
+        </iframe>
+    </div>
+
+    <div class="post-content">
+        <p>906 views • 2 years ago</p><br />
+
+    </div>
+
+    <div class="post-footer">
+        <a href="/" class="cta-button secondary">← Back</a>
+        <a href="https://www.youtube.com/watch?v=gWj-Rk2osoU" class="cta-button" target="_blank">Watch on YouTube</a>
+    </div>
+</article>
+
     </main>
 
     <footer class="site-footer">
         <div class="container">
-            <p>&copy; {{ site.time | date: '%Y' }} {{ site.title }}</p>
+            <p>&copy; 2026 KG7AJM</p>
         </div>
     </footer>
 
     <!-- Scripts -->
-    <script src="{{ '/main.js' | relative_url }}"></script>
+    <script src="/main.js"></script>
 </body>
 
 </html>
