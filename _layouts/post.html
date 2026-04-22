@@ -1,0 +1,28 @@
+---
+layout: default
+---
+
+<article class="post">
+    <header class="post-header">
+        <h1 class="post-title">{{ page.title }}</h1>
+    </header>
+
+    <div class="video-container">
+        <iframe 
+            src="https://www.youtube.com/embed/{{ page.video_id }}" 
+            title="YouTube video player" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allowfullscreen>
+        </iframe>
+    </div>
+
+    <div class="post-content">
+        {{ content | newline_to_br }}
+    </div>
+
+    <div class="post-footer">
+        <a href="{{ '/' | relative_url }}" class="cta-button secondary">← Back</a>
+        <a href="{{ page.youtube_url }}" class="cta-button" target="_blank">Watch on YouTube</a>
+    </div>
+</article>

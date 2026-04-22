@@ -1,0 +1,28 @@
+title: KG7AJM
+email: jon@example.com # Update if needed
+description: >-
+  A blog feed of my YouTube channel playlist about Ham Radio and Solar power.
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "https://kg7ajm.com" # the base hostname & protocol for your site
+
+# Build settings
+theme: null # We are using a custom design
+plugins:
+  - jekyll-feed # Good to have for SEO
+
+exclude:
+  - scripts/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/
+  - implementation_plan.md
+  - task.md
+  - walkthrough.md
+
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"

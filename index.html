@@ -1,34 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
+---
+layout: default
+---
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome | Jon</title>
-    <meta name="description" content="A premium Hello World landing page to start your new web project.">
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="index.css">
-
-    <!-- Favicon placeholder -->
-    <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
-</head>
-
-<body>
-    <!-- Background Elements -->
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-
-    <main class="container">
-        <span class="badge" id="status-badge">System Initialized</span>
-        <h1 id="main-heading">Hello World</h1>
-        <p>Your new project is ready for development. This premium foundation is set up and waiting for your vision.</p>
-        <a href="#" class="cta-button" id="get-started">Start Building</a>
-    </main>
-
-    <!-- Scripts -->
-    <script src="main.js"></script>
-</body>
-
-</html>
+<div class="post-grid">
+    {% for post in site.posts %}
+    <article class="post-card">
+        <a href="{{ post.url | relative_url }}" class="post-card-image">
+            <img src="https://img.youtube.com/vi/{{ post.video_id }}/mqdefault.jpg" alt="{{ post.title }}">
+            <div class="play-overlay">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+        </a>
+        <div class="post-card-content">
+            <span class="post-date">{{ post.date | date: "%b %d, %Y" }}</span>
+            <h2 class="post-card-title">
+                <a href="{{ post.url | relative_url }}" class="stretched-link">{{ post.title }}</a>
+            </h2>
+            <p class="post-excerpt">{{ post.content | strip_html | truncatewords: 25 }}</p>
+        </div>
+    </article>
+    {% endfor %}
+</div>
