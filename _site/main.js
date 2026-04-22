@@ -1,6 +1,41 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('KG7AJM Blog Initialized');
 
+    const themeToggle = document.getElementById('theme-toggle');
+    
+    // Check for saved theme, then system preference, then default to dark
+    const getInitialTheme = () => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) return savedTheme;
+        
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            return 'light';
+        }
+        
+        return 'dark';
+    };
+
+    const currentTheme = getInitialTheme();
+    document.documentElement.setAttribute('data-theme', currentTheme);
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            const theme = document.documentElement.getAttribute('data-theme');
+            const newTheme = theme === 'light' ? 'dark' : 'light';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    }
+
+    // Listen for system theme changes if no manual override exists
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', e => {
+        if (!localStorage.getItem('theme')) {
+            const newTheme = e.matches ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+        }
+    });
+
     const searchInput = document.getElementById('video-search');
     const sortSelect = document.getElementById('video-sort');
     const postGrid = document.getElementById('post-grid');
