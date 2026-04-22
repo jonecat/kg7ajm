@@ -34,6 +34,8 @@ GEM
       jekyll (>= 3.7, < 5.0)
     jekyll-sass-converter (1.5.2)
       sass (~> 3.4)
+    jekyll-seo-tag (2.8.0)
+      jekyll (>= 3.8, < 5.0)
     jekyll-watch (2.2.1)
       listen (~> 3.0)
     kramdown (2.5.2)
@@ -70,6 +72,7 @@ DEPENDENCIES
   ffi (~> 1.15.5)
   jekyll (~> 3.9)
   jekyll-feed (~> 0.15)
+  jekyll-seo-tag (~> 2.8)
   kramdown-parser-gfm
   public_suffix (~> 4.0.7)
   webrick (~> 1.7)

@@ -76,6 +76,7 @@ videos.each_with_index do |v_wrapper, index|
     video_id: #{video_id}
     view_count: #{view_count}
     youtube_url: https://www.youtube.com/watch?v=#{video_id}
+    image: https://img.youtube.com/vi/#{video_id}/mqdefault.jpg
     ---
   FRONTMATTER
 
