@@ -15,7 +15,10 @@ touches the repeater app or any other site on copper01: the pipeline can only wr
 | `deploy/kg7ajm.com.nginx` | the vhost of record for kg7ajm.com | `/etc/nginx/sites-available/kg7ajm.com` |
 | `deploy/sw.js` | the PWA kill switch, served at `/sw.js` | `/var/www/kg7ajm-retire/sw.js` |
 | `deploy/remote-install.sh` | runs on copper01: installs the static files and the vhost, gated on `nginx -t` | not deployed |
-| `deploy/RETIRE-RUNBOOK.md` | how the domain was released from the repeater directory, with rollback steps | not deployed |
+
+Wider operations notes for the box, including how the domain was released from the
+repeater directory and the teardown steps, live in the private `rpt` repo at
+`deploy/kg7ajm-retire/RETIRE-RUNBOOK.md`.
 
 `hub/` and `deploy/` are excluded from the Jekyll build in `_config.yml`, so they never
 land in `_site`.
@@ -84,6 +87,5 @@ ssh root@<tailnet-ip> 'bash /tmp/kg7ajm-stage/deploy/remote-install.sh --dry-run
   `/etc/nginx/backups/`.
 - The blog rsync targets `/var/www/kg7ajm.com/blog/` only, so `--delete` cannot reach the
   hub page or anything else in the docroot.
-- The nightly backup on copper01 (`rpt-db-backup.sh nightly`) bundles
-  `/var/www/kg7ajm.com` and the nginx configs to fox, so a rebuilt droplet can be
-  restored from that even without GitHub.
+- The nightly backup job on the server bundles the docroot and the nginx configs
+  offsite, so the static site and the vhost survive even without GitHub.
