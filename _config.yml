@@ -13,6 +13,9 @@ plugins:
 
 exclude:
   - scripts/
+  - hub/ # static hub page for the domain root, deployed separately
+  - deploy/ # nginx vhost + install script, deployed separately
+  - DEPLOY.md
   - Gemfile
   - Gemfile.lock
   - node_modules/

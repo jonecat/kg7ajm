@@ -1,0 +1,157 @@
+# kg7ajm.com - personal hub (hub page installed 2026-09-11)
+#
+# WHAT THIS IS
+# ------------
+# kg7ajm.com was the repeater directory until 2026-08-27, then a 301 to rptdir.com for
+# the pre-cutover era, then briefly a holding page. It is now Jon's hub: a small static
+# page that points at the projects (rptdir.com, shackboard.com, and a blog that is on the
+# way). Decisions, backups and rollback live in RETIRE-RUNBOOK.md.
+#
+# The domain keeps resolving to copper01 with its own certificate, so the HSTS pin from
+# the directory era stays satisfied and nothing here is under time pressure.
+#
+# WHAT IS SERVED
+# --------------
+#   /                 hub page, 200          (deploy/kg7ajm-hub/index.html)
+#   /index.html       the same page, same headers
+#   /favicon.svg      icon                   (deploy/kg7ajm-hub/favicon.svg)
+#   /robots.txt       crawler policy         (deploy/kg7ajm-hub/robots.txt)
+#   /sw.js            PWA kill switch, 200   (deploy/kg7ajm-retire/sw.js)
+#   /favicon.ico      204, browsers use the SVG
+#   anything else     the hub page (friendly fallback for old bookmarks)
+#
+# NO REDIRECTS. Until 2026-09-11 every path except / and /index.html forwarded to
+# rptdir.com to preserve old deep links. That is gone: old links now land on the hub,
+# which links to rptdir.com anyway. The only remaining rptdir.com reference on this
+# domain is the kill switch.
+#
+# INSTALL
+# -------
+#   scp deploy/kg7ajm-hub/index.html      root@copper01:/var/www/kg7ajm.com/index.html
+#   scp deploy/kg7ajm-hub/favicon.svg     root@copper01:/var/www/kg7ajm.com/favicon.svg
+#   scp deploy/kg7ajm-hub/robots.txt      root@copper01:/var/www/kg7ajm.com/robots.txt
+#   scp deploy/kg7ajm-hub/kg7ajm.com.nginx root@copper01:/etc/nginx/sites-available/kg7ajm.com
+#   nginx -t && systemctl reload nginx
+#
+# NEXT: THE BLOG
+# --------------
+# A blog on blog.kg7ajm.com needs its own server block and a certificate
+# (certbot --nginx -d blog.kg7ajm.com), plus a DNS record. A blog on kg7ajm.com/blog
+# instead just needs a location block here, placed ABOVE the `/` fallback. Nothing else
+# in this file changes either way.
+
+server {
+    server_name kg7ajm.com www.kg7ajm.com;
+
+    listen 443 ssl;
+    ssl_certificate /etc/letsencrypt/live/kg7ajm.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/kg7ajm.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    access_log /var/log/nginx/kg7ajm.com.access.log;
+    error_log /var/log/nginx/kg7ajm.com.error.log;
+
+    root /var/www/kg7ajm.com;
+
+    # Server-level security headers. NOTE the nginx gotcha: a location that defines its
+    # own add_header drops every server-level one for that location, so the blocks below
+    # repeat the full set they want.
+    add_header Strict-Transport-Security "max-age=15552000" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # The hub page: / and /index.html. It is one self-contained file with inline CSS and
+    # no JavaScript, so it runs under the strictest policy on this box. Outbound links
+    # are not restricted by CSP; only script/style/img/frame sources are.
+    location = / {
+        try_files /index.html =404;
+
+        add_header Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" always;
+        add_header Cache-Control "no-cache" always;
+        add_header Strict-Transport-Security "max-age=15552000" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    }
+
+    location = /index.html {
+        add_header Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" always;
+        add_header Cache-Control "no-cache" always;
+        add_header Strict-Transport-Security "max-age=15552000" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    }
+
+    # Retirement kill switch (2026-08-28). Only browsers still holding the pre-cutover
+    # workbox service worker ever request this. It wipes the old caches, sends those tabs
+    # to rptdir.com, and unregisters itself. Harmless to everyone else, so it stays until
+    # the access log shows nobody left to rescue. Source: deploy/kg7ajm-retire/sw.js.
+    location = /sw.js {
+        alias /var/www/kg7ajm-retire/sw.js;
+        default_type application/javascript;
+
+        add_header Cache-Control "no-store" always;
+        add_header Service-Worker-Allowed "/" always;
+        add_header Strict-Transport-Security "max-age=15552000" always;
+        add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    location = /favicon.ico {
+        access_log off;
+        return 204;
+    }
+
+    # The video blog: Jekyll output from the jonecat/kg7ajm repo, deployed to
+    # /var/www/kg7ajm.com/blog. `root` is inherited from the server block, so URIs map
+    # straight onto the docroot (/blog/2026/04/21/post -> /var/www/kg7ajm.com/blog/...).
+    #
+    # No CSP on purpose. The layout loads Google Analytics plus an inline gtag block and
+    # YouTube thumbnails, which would mean maintaining sha256 hashes here on every gtag
+    # edit (the trap AGENTS.md documents). This path serves static output from a public
+    # repo with no user input, no auth and no PII.
+    location = /blog {
+        return 301 /blog/;
+    }
+
+    location /blog/ {
+        index index.html;
+        try_files $uri $uri/ =404;
+
+        add_header Strict-Transport-Security "max-age=15552000" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    }
+
+    # Everything else: real files first (favicon.svg, robots.txt, anything dropped in
+    # later), otherwise the hub page. The fallback answers older bookmarks with the hub
+    # instead of a bare nginx 404.
+    location / {
+        try_files $uri /index.html =404;
+
+        add_header Strict-Transport-Security "max-age=15552000" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    }
+}
+
+# Port 80: this host redirects to ITSELF over https, not to rptdir.com, so that
+# plain-http visitors reach the hub.
+#
+# The redirect is a `location /`, NOT a server-level `return`, for the same reason the
+# retired block documented: a server-level return runs in the rewrite phase, before
+# location selection, so it would pre-empt the `/.well-known/acme-challenge/` location
+# that certbot's nginx authenticator inserts here when this certificate renews. Keeping
+# the redirect inside a location leaves room for that temporary block.
+server {
+    listen 80;
+    server_name kg7ajm.com www.kg7ajm.com;
+
+    location / {
+        return 301 https://kg7ajm.com$request_uri;
+    }
+}

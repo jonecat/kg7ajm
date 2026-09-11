@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KG7AJM.com - Ham radio projects and tools</title>
+<meta name="description" content="Amateur radio projects by Jon, KG7AJM: the RPTDIR repeater directory, the ShackBoard shack dashboard, and a blog in the works.">
+<meta name="color-scheme" content="dark">
+<meta property="og:title" content="KG7AJM.com - Ham radio projects and tools">
+<meta property="og:description" content="The repeater directory, the ShackBoard shack dashboard, and a blog in the works.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kg7ajm.com/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/favicon.svg">
+<!--
+  kg7ajm.com hub page.
+
+  Served by nginx from /var/www/kg7ajm.com/index.html (see kg7ajm.com.nginx in this
+  folder). The domain was the repeater directory until 2026-08-27; it is now a static
+  front door that points at the projects.
+
+  One self-contained file on purpose: inline CSS, no JavaScript, no external requests,
+  no web fonts to fetch. That lets nginx serve it under
+  "default-src 'none'; style-src 'unsafe-inline'", so the page costs one request and
+  nothing can be injected from off-origin.
+
+  Adding a destination later = copy one <li class="card">. The blog entry is already
+  there with the anchor commented out; when its address exists, uncomment and set href.
+-->
+<style>
+  :root {
+    --bg: #0B0F19;
+    --panel: #111826;
+    --panel-hover: #141d2e;
+    --ink: #f8fafc;
+    --body: #cbd5e1;
+    --muted: #94a3b8;
+    --accent: #34d399;
+    --accent-ink: #047857;
+    --accent-ink-hover: #065f46;
+    --edge: #1e293b;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: clamp(1.5rem, 5vw, 4.5rem) clamp(1.25rem, 4vw, 2rem);
+    background:
+      radial-gradient(55rem 28rem at 10% -10%, rgba(52, 211, 153, 0.11), transparent 62%),
+      radial-gradient(40rem 22rem at 100% 0%, rgba(52, 211, 153, 0.05), transparent 60%),
+      var(--bg);
+    color: var(--body);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { width: 100%; max-width: 58rem; margin: 0 auto; }
+
+  header { max-width: 44rem; margin: 0 0 clamp(2rem, 5vw, 3rem); }
+
+  .callsign {
+    display: inline-block;
+    margin: 0 0 1.25rem;
+    padding: 0.25rem 0.6rem;
+    border: 1px solid var(--edge);
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+  }
+
+  h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(1.75rem, 4.5vw, 2.5rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .lede { margin: 0; font-size: 1.0625rem; color: var(--body); }
+
+  .projects {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 720px) {
+    .projects { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+  }
+
+  .card {
+    height: 100%;
+    border: 1px solid var(--edge);
+    border-radius: 1rem;
+    background: linear-gradient(180deg, rgba(17, 24, 38, 0.92), rgba(11, 15, 25, 0.92));
+    transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
+  }
+
+  .card > a,
+  .card > .boxed {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    height: 100%;
+    padding: 1.25rem;
+    color: inherit;
+    text-decoration: none;
+    border-radius: 1rem;
+  }
+
+  .card > a:hover { background: var(--panel-hover); border-color: rgba(52, 211, 153, 0.45); }
+  .card > a:hover .title { color: var(--accent); }
+
+  .card > a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .title {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    transition: color 140ms ease;
+  }
+
+  .chip {
+    align-self: flex-start;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .chip.pending { color: var(--muted); }
+
+  .blurb { margin: 0; font-size: 0.9375rem; color: var(--body); }
+
+  .go {
+    margin-top: auto;
+    padding-top: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .card.pending { border-style: dashed; }
+  .card.pending .blurb { color: var(--muted); }
+
+  footer {
+    margin: clamp(2.5rem, 6vw, 4rem) 0 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--edge);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    justify-content: space-between;
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  footer a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+  footer p { margin: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card, .title { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <p class="callsign">KG7AJM</p>
+      <h1>Amateur radio, built and shared</h1>
+      <p class="lede">
+        I'm Jon, KG7AJM, in Arizona. This is the front door to the things I build and
+        run, with more on the way.
+      </p>
+    </header>
+
+    <ul class="projects">
+      <li class="card">
+        <a href="https://rptdir.com/">
+          <p class="title">Repeater Directory</p>
+          <span class="chip">rptdir.com</span>
+          <p class="blurb">
+            Nearly 18,000 repeaters across the US and Canada. Search and map them,
+            plan a trip along a corridor, and export straight to CHIRP.
+          </p>
+          <span class="go">Open rptdir.com &rarr;</span>
+        </a>
+      </li>
+
+      <li class="card">
+        <a href="https://shackboard.com/">
+          <p class="title">ShackBoard</p>
+          <span class="chip">shackboard.com</span>
+          <p class="blurb">
+            A live dashboard for the shack: DX and POTA spots, satellite passes,
+            space weather and a greyline map.
+          </p>
+          <span class="go">Open shackboard.com &rarr;</span>
+        </a>
+      </li>
+
+      <li class="card">
+        <a href="/blog/">
+          <p class="title">Video Blog</p>
+          <span class="chip">kg7ajm.com/blog</span>
+          <p class="blurb">
+            Ham radio and solar projects from the channel: build videos, radio
+            programming, and notes from the bench.
+          </p>
+          <span class="go">Browse the videos &rarr;</span>
+        </a>
+      </li>
+    </ul>
+
+    <footer>
+      <p>Find me on <a href="https://www.qrz.com/db/KG7AJM">QRZ as KG7AJM</a></p>
+      <p>&copy; 2026 KG7AJM &middot; Arizona</p>
+    </footer>
+  </div>
+</body>
+</html>

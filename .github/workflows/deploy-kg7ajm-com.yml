@@ -1,0 +1,109 @@
+# Deploys kg7ajm.com: the hub page at /, the Jekyll blog at /blog, and the nginx vhost.
+#
+# This repo owns the whole domain, with its own secrets, so blog work never touches the
+# repeater app or any other site on copper01. The vhost install is gated on `nginx -t`
+# inside deploy/remote-install.sh: a config that fails the test is rolled back and nginx
+# is not reloaded.
+#
+# Until the secrets below exist the run stays green and skips the deploy with a notice,
+# so nothing here can fail noisily before it is set up.
+name: Deploy kg7ajm.com
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 9 * * *' # 09:00 UTC daily, so new playlist videos appear without a push
+  workflow_dispatch:
+
+concurrency:
+  group: kg7ajm-com
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check that the deploy secrets exist
+        id: pre
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          if [ -z "$SSH_KEY" ]; then
+            echo "::notice title=Deploy skipped::SSH_KEY is not set on this repo yet, so the deploy steps are skipped. See DEPLOY.md."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.pre.outputs.configured == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        if: steps.pre.outputs.configured == 'true'
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+
+      - name: Refresh the video list from the playlist
+        if: steps.pre.outputs.configured == 'true'
+        run: ruby scripts/fetch_youtube.rb
+
+      - name: Build the blog
+        if: steps.pre.outputs.configured == 'true'
+        run: bundle exec jekyll build
+        env:
+          JEKYLL_ENV: production
+
+      - name: Connect to Tailscale
+        if: steps.pre.outputs.configured == 'true'
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
+      - name: Deploy to copper01
+        if: steps.pre.outputs.configured == 'true'
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }} # copper01 tailnet address, not the public IP
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          SSH="ssh -i $HOME/.ssh/id_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$HOME/.ssh/known_hosts"
+          TARGET="$SSH_USER@$SSH_HOST"
+
+          # stage the static site, the kill switch, the vhost and the installer
+          $SSH "$TARGET" 'rm -rf /tmp/kg7ajm-stage && mkdir -p /tmp/kg7ajm-stage/hub /tmp/kg7ajm-stage/deploy'
+          rsync -az -e "$SSH" hub/ "$TARGET:/tmp/kg7ajm-stage/hub/"
+          rsync -az -e "$SSH" deploy/kg7ajm.com.nginx deploy/sw.js deploy/remote-install.sh "$TARGET:/tmp/kg7ajm-stage/deploy/"
+
+          # blog output goes straight to its own directory, so --delete can never touch
+          # the hub page or anything else in the docroot
+          rsync -az --delete --exclude '.DS_Store' -e "$SSH" _site/ "$TARGET:/var/www/kg7ajm.com/blog/"
+
+          # install the static site and the vhost (nginx -t gated, rolls back on failure)
+          $SSH "$TARGET" 'bash /tmp/kg7ajm-stage/deploy/remote-install.sh /tmp/kg7ajm-stage'
+
+      - name: Smoke test
+        if: steps.pre.outputs.configured == 'true'
+        run: |
+          set -euo pipefail
+          for u in https://kg7ajm.com/ https://kg7ajm.com/blog/ https://kg7ajm.com/blog/feed.xml; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --retry 3 --retry-delay 3 "$u")
+            echo "$u -> $code"
+            [ "$code" = "200" ] || { echo "::error::$u returned $code"; exit 1; }
+          done
+          # the hub must still be the hub: if the blog build ever landed in the docroot
+          # root this catches it
+          curl -s https://kg7ajm.com/ | grep -q '<h1>' || { echo "::error::the hub page is missing"; exit 1; }
