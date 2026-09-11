@@ -2,7 +2,7 @@ title: KG7AJM
 email: jon@example.com # Update if needed
 description: >-
   A blog feed of my YouTube channel playlist about Ham Radio and Solar power.
-baseurl: "" # the subpath of your site, e.g. /blog
+baseurl: "/blog" # the subpath of your site: this blog now lives at kg7ajm.com/blog
 url: "https://kg7ajm.com" # the base hostname & protocol for your site
 
 # Build settings
