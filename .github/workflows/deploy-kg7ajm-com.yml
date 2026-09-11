@@ -62,6 +62,21 @@ jobs:
         env:
           JEKYLL_ENV: production
 
+      - name: Check the build is complete
+        # A post whose front-matter date Jekyll refuses silently falls back to its filename
+        # date, which can move it to the wrong end of the list with no error. Counting the
+        # cards against the posts catches that whole class of quiet loss.
+        if: steps.pre.outputs.configured == 'true'
+        run: |
+          posts=$(ls _posts/*.md | wc -l)
+          cards=$(grep -c 'post-card-image' _site/index.html || true)
+          echo "posts generated: $posts"
+          echo "cards on the built index: $cards"
+          if [ "$posts" != "$cards" ]; then
+            echo "::error::$posts posts but $cards cards on the index: a post was dropped or lost its date"
+            exit 1
+          fi
+
       - name: Connect to Tailscale
         if: steps.pre.outputs.configured == 'true'
         uses: tailscale/github-action@v3

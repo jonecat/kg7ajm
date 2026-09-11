@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Setting up FT8 with a Yaesu FT-991 | Part 2 - Installing WJST-X on Linux"
-date: 2026-09-10 22:05:37 +0000
+date: 2021-11-17T12:00:06Z
 video_id: RApgeGogisI
 view_count: 3900
 youtube_url: https://www.youtube.com/watch?v=RApgeGogisI

@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "HT Scan Speed Shootout - Who Is Fastest?"
-date: 2026-09-11 12:05:37 +0000
+date: 2024-01-20T12:00:20Z
 video_id: RnuFEoI_omE
 view_count: 2200
 youtube_url: https://www.youtube.com/watch?v=RnuFEoI_omE

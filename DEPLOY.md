@@ -11,7 +11,7 @@ touches the repeater app or any other site on copper01: the pipeline can only wr
 |---|---|---|
 | `hub/index.html`, `hub/favicon.svg`, `hub/robots.txt` | the domain root: a static hub linking to rptdir.com, shackboard.com and the blog | `/var/www/kg7ajm.com/` |
 | `_posts/`, `_layouts/`, `index.html`, `index.css`, `main.js` | the Jekyll blog (this repo's root is the Jekyll source) | built to `_site/`, then `/var/www/kg7ajm.com/blog/` |
-| `scripts/fetch_youtube.rb` | regenerates `_posts/` from the YouTube playlist | not deployed |
+| `scripts/fetch_youtube.rb` | regenerates `_posts/` from the YouTube playlist: one post per video, ordered by each video's real upload date | not deployed |
 | `deploy/kg7ajm.com.nginx` | the vhost of record for kg7ajm.com | `/etc/nginx/sites-available/kg7ajm.com` |
 | `deploy/sw.js` | the PWA kill switch, served at `/sw.js` | `/var/www/kg7ajm-retire/sw.js` |
 | `deploy/remote-install.sh` | runs on copper01: installs the static files and the vhost, gated on `nginx -t` | not deployed |
