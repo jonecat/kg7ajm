@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Testing a new antenna for portable use"
-date: 2022-02-19T12:00:08Z
+date: 2022-02-19T12:00:07Z
 video_id: pfcu-BmgwdI
 view_count: 227
 youtube_url: https://www.youtube.com/watch?v=pfcu-BmgwdI

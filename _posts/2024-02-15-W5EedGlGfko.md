@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Retevis RT95 VS Kenwood TM-V71 TX Quality Test"
-date: 2024-02-15T12:00:29Z
+date: 2024-02-15T12:00:28Z
 video_id: W5EedGlGfko
 view_count: 1100
 youtube_url: https://www.youtube.com/watch?v=W5EedGlGfko

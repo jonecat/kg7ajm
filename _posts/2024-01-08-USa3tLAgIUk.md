@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Yaesu FT-891 Upgrades"
-date: 2024-01-08T12:00:19Z
+date: 2024-01-08T12:00:18Z
 video_id: USa3tLAgIUk
 view_count: 2800
 youtube_url: https://www.youtube.com/watch?v=USa3tLAgIUk
