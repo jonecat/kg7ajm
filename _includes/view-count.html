@@ -1,0 +1,7 @@
+{%- comment -%}
+Compact view-count readout, matching how YouTube formats them:
+  999 -> 999,  1100 -> 1.1K,  28000 -> 28K
+Pass a count in:  {% include view-count.html count=post.view_count %}
+{%- endcomment -%}
+{%- assign v = include.count | default: 0 -%}
+{%- if v >= 10000 -%}{{ v | divided_by: 1000 | round: 0 }}K{%- elsif v >= 1000 -%}{{ v | divided_by: 1000.0 | round: 1 }}K{%- else -%}{{ v }}{%- endif -%}

@@ -1,104 +1,106 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('KG7AJM Blog Initialized');
-
+    // ---------------------------------------------------------------- theme
+    // The initial attribute is set by the inline script in _layouts/default.html
+    // (before first paint); this only mirrors it into the toggle's label and the
+    // browser chrome colour, and flips it on click.
     const themeToggle = document.getElementById('theme-toggle');
-    
-    // Check for saved theme, then system preference, then default to dark
-    const getInitialTheme = () => {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) return savedTheme;
-        
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-            return 'light';
+    const themeColorMeta = document.getElementById('theme-color-meta');
+    const THEME_COLORS = { dark: '#0B0F19', light: '#F8FAFC' };
+
+    const syncThemeUi = (theme) => {
+        if (themeColorMeta) themeColorMeta.setAttribute('content', THEME_COLORS[theme] || THEME_COLORS.dark);
+        if (themeToggle) {
+            themeToggle.setAttribute(
+                'aria-label',
+                theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
+            );
         }
-        
-        return 'dark';
     };
 
-    const currentTheme = getInitialTheme();
-    document.documentElement.setAttribute('data-theme', currentTheme);
+    const currentTheme = () =>
+        document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+
+    syncThemeUi(currentTheme());
 
     if (themeToggle) {
         themeToggle.addEventListener('click', () => {
-            const theme = document.documentElement.getAttribute('data-theme');
-            const newTheme = theme === 'light' ? 'dark' : 'light';
-            
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
+            const next = currentTheme() === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', next);
+            try { localStorage.setItem('theme', next); } catch (e) { /* storage blocked */ }
+            syncThemeUi(next);
         });
     }
 
-    // Listen for system theme changes if no manual override exists
-    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', e => {
-        if (!localStorage.getItem('theme')) {
-            const newTheme = e.matches ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-        }
-    });
+    // Follow the system only while the visitor has expressed no preference.
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+            let saved = null;
+            try { saved = localStorage.getItem('theme'); } catch (err) { /* storage blocked */ }
+            if (saved === 'light' || saved === 'dark') return;
+            const next = e.matches ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            syncThemeUi(next);
+        });
+    }
 
+    // ---------------------------------------------------- filter and sort
     const searchInput = document.getElementById('video-search');
     const sortSelect = document.getElementById('video-sort');
     const postGrid = document.getElementById('post-grid');
-    
+    const countPill = document.getElementById('video-count');
+    const emptyState = document.getElementById('video-empty');
+
     if (!postGrid) return;
-    
-    const cards = Array.from(document.querySelectorAll('.post-card'));
 
-    // --- Search Logic ---
+    const cards = Array.from(postGrid.querySelectorAll('.post-card'));
+    const total = cards.length;
+
+    const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+    const updateCount = (visible) => {
+        if (!countPill) return;
+        countPill.textContent = visible === total
+            ? plural(total, 'video')
+            : `${visible} of ${plural(total, 'video')}`;
+    };
+
+    updateCount(total);
+
+    const applyFilter = () => {
+        const term = (searchInput ? searchInput.value : '').trim().toLowerCase();
+        let visible = 0;
+
+        cards.forEach((card) => {
+            const title = card.getAttribute('data-title') || '';
+            const matches = title.includes(term);
+            card.style.display = matches ? 'flex' : 'none';
+            if (matches) visible += 1;
+        });
+
+        updateCount(visible);
+        if (emptyState) emptyState.hidden = visible !== 0;
+    };
+
     if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            cards.forEach(card => {
-                const title = card.getAttribute('data-title');
-                if (title.includes(term)) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
+        searchInput.addEventListener('input', applyFilter);
     }
 
-    // --- Sort Logic ---
     if (sortSelect) {
-        sortSelect.addEventListener('change', (e) => {
-            const val = e.target.value;
-            const sortedCards = [...cards].sort((a, b) => {
-                if (val === 'newest') {
-                    return b.getAttribute('data-date') - a.getAttribute('data-date');
-                } else if (val === 'oldest') {
-                    return a.getAttribute('data-date') - b.getAttribute('data-date');
-                } else if (val === 'most-views') {
-                    return b.getAttribute('data-views') - a.getAttribute('data-views');
-                } else if (val === 'least-views') {
-                    return a.getAttribute('data-views') - b.getAttribute('data-views');
+        sortSelect.addEventListener('change', () => {
+            const value = sortSelect.value;
+            const readNum = (card, attr) => Number(card.getAttribute(attr)) || 0;
+
+            const sorted = [...cards].sort((a, b) => {
+                switch (value) {
+                    case 'oldest': return readNum(a, 'data-date') - readNum(b, 'data-date');
+                    case 'most-views': return readNum(b, 'data-views') - readNum(a, 'data-views');
+                    case 'least-views': return readNum(a, 'data-views') - readNum(b, 'data-views');
+                    case 'newest':
+                    default: return readNum(b, 'data-date') - readNum(a, 'data-date');
                 }
-                return 0;
             });
 
-            // Re-append cards in new order
-            sortedCards.forEach(card => postGrid.appendChild(card));
+            sorted.forEach((card) => postGrid.appendChild(card));
         });
     }
-
-    // --- 3D Tilt Effect ---
-    cards.forEach(card => {
-        card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-
-            const rotateX = (y - centerY) / 20;
-            const rotateY = (centerX - x) / 20;
-
-            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px)`;
-        });
-
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
-        });
-    });
 });

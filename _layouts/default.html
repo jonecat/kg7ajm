@@ -1,10 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark light">
+    <meta name="theme-color" id="theme-color-meta" content="#0B0F19">
     {% seo %}
+
+    <!-- Theme, applied before first paint so a light-mode visitor never sees a
+         dark flash. main.js owns the toggle; this only seeds the attribute. -->
+    <script>
+        (function () {
+            var theme = 'dark';
+            try {
+                var saved = localStorage.getItem('theme');
+                if (saved === 'light' || saved === 'dark') {
+                    theme = saved;
+                } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                    theme = 'light';
+                }
+            } catch (e) { /* storage blocked: keep the dark default */ }
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-T2TM05T6NQ"></script>
@@ -16,30 +35,69 @@
         gtag('config', 'G-T2TM05T6NQ');
     </script>
 
+    <!-- Fonts: the same three the rest of the series uses -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap"
+        rel="stylesheet">
+
     <!-- Styles -->
     <link rel="stylesheet" href="{{ '/index.css' | relative_url }}">
 
-    <!-- Favicon -->
-    <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📡</text></svg>">
+    <!-- Favicon: the same KG7AJM mark the hub page at / uses, inlined so it
+         costs no extra request -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%230B0F19%22/><rect x=%220.5%22 y=%220.5%22 width=%2231%22 height=%2231%22 rx=%226.5%22 fill=%22none%22 stroke=%22%231e293b%22/><g fill=%22none%22 stroke=%22%2334d399%22 stroke-width=%222.6%22 stroke-linecap=%22round%22><path d=%22M9 17.5a6 6 0 0 1 6 6%22/><path d=%22M9 12a11.5 11.5 0 0 1 11.5 11.5%22/></g><circle cx=%229%22 cy=%2223.5%22 r=%222.4%22 fill=%22%2334d399%22/></svg>">
 </head>
 
 <body>
-    <!-- Background Elements -->
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-
     <header class="site-header">
-        <div class="container header-container">
-            <a href="{{ '/' | relative_url }}" class="site-title">{{ site.title }}</a>
+        <div class="header-container">
+            <a href="{{ '/' | relative_url }}" class="brand">
+                <span class="brand-tile" aria-hidden="true">
+                    <svg viewBox="7 10.5 15.5 15.5" fill="none" stroke="#34d399" stroke-width="2.6" stroke-linecap="round">
+                        <path d="M9 17.5a6 6 0 0 1 6 6" />
+                        <path d="M9 12a11.5 11.5 0 0 1 11.5 11.5" />
+                        <circle cx="9" cy="23.5" r="2.4" fill="#34d399" stroke="none" />
+                    </svg>
+                </span>
+                <span class="brand-text">
+                    <span class="brand-name">{{ site.title }}</span>
+                    <span class="brand-sub">Video Blog</span>
+                </span>
+            </a>
             <div class="header-actions">
-                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">
-                    <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="18.36" x2="5.64" y2="19.78"/><line x1="18.36" y1="4.22" x2="19.78" y2="5.64"/></svg>
-                    <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <button id="theme-toggle" class="icon-button" type="button"
+                    aria-label="Switch to light theme" title="Switch theme">
+                    <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="5" />
+                        <line x1="12" y1="1" x2="12" y2="3" />
+                        <line x1="12" y1="21" x2="12" y2="23" />
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                        <line x1="1" y1="12" x2="3" y2="12" />
+                        <line x1="21" y1="12" x2="23" y2="12" />
+                        <line x1="4.22" y1="18.36" x2="5.64" y2="19.78" />
+                        <line x1="18.36" y1="4.22" x2="19.78" y2="5.64" />
+                    </svg>
+                    <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" aria-hidden="true">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
                 </button>
-                <a href="https://www.qrz.com/db/KG7AJM" target="_blank" class="nav-button">
-                    QRZ Profile
-                    <svg class="icon-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                <!-- Root of the site, i.e. the hub page. Root-relative (not the
+                     absolute https://kg7ajm.com/) so it resolves on whatever host
+                     is serving, including local review. -->
+                <a href="/" class="nav-button" title="All KG7AJM projects">
+                    <span class="nav-label">All projects</span>
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                        <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                        <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                        <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                    </svg>
                 </a>
             </div>
         </div>
@@ -50,8 +108,10 @@
     </main>
 
     <footer class="site-footer">
-        <div class="container">
-            <p>&copy; {{ site.time | date: '%Y' }} {{ site.title }}</p>
+        <div class="footer-container">
+            <p>Find me on <a href="https://www.qrz.com/db/KG7AJM" target="_blank" rel="noopener">QRZ as KG7AJM</a></p>
+            <p><a href="https://kg7ajm.com/">More projects at kg7ajm.com</a></p>
+            <p class="footer-tag">&copy; {{ site.time | date: '%Y' }} KG7AJM &middot; ARIZONA</p>
         </div>
     </footer>
 

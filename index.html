@@ -2,39 +2,57 @@
 layout: default
 ---
 
+<div class="page-head">
+    <p class="eyebrow">KG7AJM &middot; Arizona</p>
+    <h1>Ham radio and solar, from the bench</h1>
+    <p class="lede">Every video from the channel: radio, firmware, and portable power.</p>
+</div>
 
 <div class="controls">
-    <div class="search-box">
-        <input type="text" id="video-search" placeholder="Filter videos by title..." aria-label="Search videos by title">
+    <div class="search-box field-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" id="video-search" placeholder="Filter videos by title" aria-label="Search videos by title">
     </div>
     <div class="sort-box">
         <select id="video-sort" aria-label="Sort videos by date or views">
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="most-views">Most Views</option>
-            <option value="least-views">Least Views</option>
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="most-views">Most views</option>
+            <option value="least-views">Least views</option>
         </select>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9" />
+        </svg>
     </div>
+    <span class="count-pill" id="video-count">{{ site.posts | size }} videos</span>
 </div>
 
 <div class="post-grid" id="post-grid">
     {% for post in site.posts %}
-    <article class="post-card" 
-             data-title="{{ post.title | downcase }}" 
-             data-date="{{ post.date | date: '%s' }}" 
+    <article class="post-card"
+             data-title="{{ post.title | downcase }}"
+             data-date="{{ post.date | date: '%s' }}"
              data-views="{{ post.view_count | default: 0 }}">
-        <a href="{{ post.url | relative_url }}" class="post-card-image">
-            <img src="https://img.youtube.com/vi/{{ post.video_id }}/mqdefault.jpg" alt="{{ post.title }}">
+        <a href="{{ post.url | relative_url }}" class="post-card-image" aria-hidden="true" tabindex="-1">
+            <img src="https://img.youtube.com/vi/{{ post.video_id }}/mqdefault.jpg" alt="" loading="lazy">
             <div class="play-overlay">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
             </div>
         </a>
         <div class="post-card-content">
+            <div class="post-meta">
+                <span class="chip accent">{% include view-count.html count=post.view_count %} VIEWS</span>
+                <span class="chip">{{ post.date | date: '%b %-d, %Y' | upcase }}</span>
+            </div>
             <h2 class="post-card-title">
                 <a href="{{ post.url | relative_url }}" class="stretched-link">{{ post.title }}</a>
             </h2>
-            <p class="post-excerpt">{{ post.content | strip_html | truncatewords: 25 }}</p>
         </div>
     </article>
     {% endfor %}
 </div>
+
+<p class="no-results" id="video-empty" hidden>No videos match that filter.</p>

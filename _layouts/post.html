@@ -4,15 +4,19 @@ layout: default
 
 <article class="post">
     <header class="post-header">
+        <!-- Date only: the post body already carries its own view count, and two
+             copies of the same number on one screen reads as a mistake. -->
+        <div class="post-meta">
+            <span class="chip accent">{{ page.date | date: '%b %-d, %Y' | upcase }}</span>
+        </div>
         <h1 class="post-title">{{ page.title }}</h1>
     </header>
 
     <div class="video-container">
-        <iframe 
-            src="https://www.youtube.com/embed/{{ page.video_id }}" 
-            title="YouTube video player" 
-            frameborder="0" 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+        <iframe
+            src="https://www.youtube.com/embed/{{ page.video_id }}"
+            title="{{ page.title }}"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen>
         </iframe>
     </div>
@@ -22,7 +26,20 @@ layout: default
     </div>
 
     <div class="post-footer">
-        <a href="{{ '/' | relative_url }}" class="cta-button secondary">← Back</a>
-        <a href="{{ page.youtube_url }}" class="cta-button" target="_blank">Watch on YouTube</a>
+        <a href="{{ '/' | relative_url }}" class="cta-button secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="12 19 5 12 12 5" />
+            </svg>
+            Back to all videos
+        </a>
+        <a href="{{ page.youtube_url }}" class="cta-button" target="_blank" rel="noopener">
+            Watch on YouTube
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+        </a>
     </div>
 </article>
