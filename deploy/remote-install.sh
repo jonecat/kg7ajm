@@ -9,8 +9,12 @@
 #
 # Usage:  remote-install.sh [--dry-run] [STAGE_DIR]
 #   STAGE_DIR defaults to /tmp/kg7ajm-stage and must contain:
-#     hub/index.html  hub/favicon.svg  hub/robots.txt
+#     hub/index.html  hub/favicon.svg  hub/robots.txt  hub/shots/*.webp
 #     deploy/kg7ajm.com.nginx  deploy/sw.js
+#
+# The card screenshots in hub/shots/ are installed to $DOCROOT/shots/ because the
+# hub page references them at /shots/<name>.webp. The page is one self-contained
+# file apart from those images; see the comment in hub/index.html.
 #
 # The blog output is NOT handled here: CI rsyncs the built site straight into
 # /var/www/kg7ajm.com/blog/ and this script only normalises its ownership.
@@ -46,6 +50,11 @@ done
 grep -q 'server_name kg7ajm.com' "$STAGE/deploy/kg7ajm.com.nginx" \
   || fail "staged vhost does not look like the kg7ajm.com vhost"
 grep -q '<h1>' "$STAGE/hub/index.html" || fail "staged hub page looks empty"
+# A screenshot the hub page points at but that was never staged would ship as a
+# broken image with a green build, so check every reference resolves.
+for img in $(grep -o '/shots/[A-Za-z0-9._-]*\.webp' "$STAGE/hub/index.html" | sort -u); do
+  [ -f "$STAGE/hub$img" ] || fail "hub page references $img but $STAGE/hub$img is missing"
+done
 
 # --- 1. static files ----------------------------------------------------------
 install_file() {  # src dst label
@@ -69,6 +78,16 @@ say "static site -> $DOCROOT"
 install_file "$STAGE/hub/index.html"  "$DOCROOT/index.html"  "index.html"
 install_file "$STAGE/hub/favicon.svg" "$DOCROOT/favicon.svg" "favicon.svg"
 install_file "$STAGE/hub/robots.txt"  "$DOCROOT/robots.txt"  "robots.txt"
+
+# Card screenshots, installed under the /shots/ prefix the hub page uses.
+if [ -d "$STAGE/hub/shots" ]; then
+  [ "$DRY" = 1 ] || mkdir -p "$DOCROOT/shots"
+  for src in "$STAGE"/hub/shots/*.webp; do
+    [ -f "$src" ] || continue
+    name=$(basename "$src")
+    install_file "$src" "$DOCROOT/shots/$name" "shots/$name"
+  done
+fi
 
 say "kill switch -> $RETIRE"
 [ "$DRY" = 1 ] || mkdir -p "$RETIRE"

@@ -10,6 +10,7 @@
 <meta property="og:description" content="The repeater directory, the ShackBoard shack dashboard, and a blog in the works.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kg7ajm.com/">
+<meta name="theme-color" content="#0B0F19">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/favicon.svg">
 <!--
@@ -19,13 +20,16 @@
   folder). The domain was the repeater directory until 2026-08-27; it is now a static
   front door that points at the projects.
 
-  One self-contained file on purpose: inline CSS, no JavaScript, no external requests,
-  no web fonts to fetch. That lets nginx serve it under
-  "default-src 'none'; style-src 'unsafe-inline'", so the page costs one request and
-  nothing can be injected from off-origin.
+  Still one self-contained file: inline CSS, no JavaScript, no web fonts, no external
+  requests. The only assets it pulls are its own favicon and the three card screenshots
+  in shots/ (installed from hub/shots/ by deploy/remote-install.sh), so it keeps running
+  under "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:".
 
-  Adding a destination later = copy one <li class="card">. The blog entry is already
-  there with the anchor commented out; when its address exists, uncomment and set href.
+  Card screenshots are 800x450 WebP, 16:9 to match the blog's card grid. They are the
+  public front page of each project, captured at 2x and downscaled. Replace one by
+  overwriting hub/shots/<name>.webp at the same dimensions.
+
+  Adding a destination later = copy one <li class="card"> block, including its <img>.
 -->
 <style>
   :root {
@@ -63,7 +67,10 @@
 
   .wrap { width: 100%; max-width: 58rem; margin: 0 auto; }
 
-  header { max-width: 44rem; margin: 0 0 clamp(2rem, 5vw, 3rem); }
+  /* No width cap: the heading and lede are single lines, and a bounded column
+     (it was 44rem) made them wrap early on a desktop viewport. They now wrap
+     only when the viewport itself cannot fit them. */
+  header { margin: 0 0 clamp(2rem, 5vw, 3rem); }
 
   .callsign {
     display: inline-block;
@@ -84,6 +91,8 @@
     line-height: 1.15;
     letter-spacing: -0.02em;
     color: var(--ink);
+    /* only matters once it genuinely has to wrap: keeps that break even */
+    text-wrap: balance;
   }
 
   .lede { margin: 0; font-size: 1.0625rem; color: var(--body); }
@@ -106,6 +115,8 @@
     border: 1px solid var(--edge);
     border-radius: 1rem;
     background: linear-gradient(180deg, rgba(17, 24, 38, 0.92), rgba(11, 15, 25, 0.92));
+    /* clips the screenshot into the card's rounded top corners */
+    overflow: hidden;
     transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
   }
 
@@ -113,16 +124,40 @@
   .card > .boxed {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
     height: 100%;
-    padding: 1.25rem;
     color: inherit;
     text-decoration: none;
     border-radius: 1rem;
   }
 
-  .card > a:hover { background: var(--panel-hover); border-color: rgba(52, 211, 153, 0.45); }
+  .card > .boxed { gap: 0.75rem; padding: 1.25rem; }
+
+  /* Full-bleed screenshot at the top of each card. `height: auto` is required:
+     the width/height attributes set a presentational height that would override
+     aspect-ratio and stretch the image to its intrinsic 450px. The attributes
+     stay for the load-time aspect box, which is what prevents layout shift. */
+  .card .shot {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    background: var(--panel);
+    border-bottom: 1px solid var(--edge);
+  }
+
+  .card .body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+    padding: 1.25rem;
+  }
+
+  .card > a:hover { background: var(--panel-hover); }
+  .card:has(> a:hover) { border-color: rgba(52, 211, 153, 0.45); }
   .card > a:hover .title { color: var(--accent); }
+  .card > a:hover .shot { opacity: 0.92; }
 
   .card > a:focus-visible {
     outline: 2px solid var(--accent);
@@ -179,7 +214,7 @@
   footer p { margin: 0; }
 
   @media (prefers-reduced-motion: reduce) {
-    .card, .title { transition: none; }
+    .card, .title, .shot { transition: none; }
   }
 </style>
 </head>
@@ -197,37 +232,49 @@
     <ul class="projects">
       <li class="card">
         <a href="https://rptdir.com/">
-          <p class="title">Repeater Directory</p>
-          <span class="chip">rptdir.com</span>
-          <p class="blurb">
-            Nearly 18,000 repeaters across the US and Canada. Search and map them,
-            plan a trip along a corridor, and export straight to CHIRP.
-          </p>
-          <span class="go">Open rptdir.com &rarr;</span>
+          <img class="shot" src="/shots/repeater-directory.webp" alt="" width="800" height="450"
+               decoding="async">
+          <div class="body">
+            <p class="title">Repeater Directory</p>
+            <span class="chip">rptdir.com</span>
+            <p class="blurb">
+              Nearly 18,000 repeaters across the US and Canada. Search and map them,
+              plan a trip along a corridor, and export straight to CHIRP.
+            </p>
+            <span class="go">Open rptdir.com &rarr;</span>
+          </div>
         </a>
       </li>
 
       <li class="card">
         <a href="https://shackboard.com/">
-          <p class="title">ShackBoard</p>
-          <span class="chip">shackboard.com</span>
-          <p class="blurb">
-            A live dashboard for the shack: DX and POTA spots, satellite passes,
-            space weather and a greyline map.
-          </p>
-          <span class="go">Open shackboard.com &rarr;</span>
+          <img class="shot" src="/shots/shackboard.webp" alt="" width="800" height="450"
+               decoding="async">
+          <div class="body">
+            <p class="title">ShackBoard</p>
+            <span class="chip">shackboard.com</span>
+            <p class="blurb">
+              A live dashboard for the shack: DX and POTA spots, satellite passes,
+              space weather and a greyline map.
+            </p>
+            <span class="go">Open shackboard.com &rarr;</span>
+          </div>
         </a>
       </li>
 
       <li class="card">
         <a href="/blog/">
-          <p class="title">Video Blog</p>
-          <span class="chip">kg7ajm.com/blog</span>
-          <p class="blurb">
-            Ham radio and solar projects from the channel: build videos, radio
-            programming, and notes from the bench.
-          </p>
-          <span class="go">Browse the videos &rarr;</span>
+          <img class="shot" src="/shots/video-blog.webp" alt="" width="800" height="450"
+               decoding="async">
+          <div class="body">
+            <p class="title">Video Blog</p>
+            <span class="chip">kg7ajm.com/blog</span>
+            <p class="blurb">
+              Ham radio and solar projects from the channel: build videos, radio
+              programming, and notes from the bench.
+            </p>
+            <span class="go">Browse the videos &rarr;</span>
+          </div>
         </a>
       </li>
     </ul>
